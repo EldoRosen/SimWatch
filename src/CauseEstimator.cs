@@ -159,7 +159,7 @@ namespace SimWatch
             {
                 var line = raw.Trim();
                 if (line.Length == 0 || line.StartsWith("(")) continue;
-                if (line.IndexOf("profiling", StringComparison.OrdinalIgnoreCase) >= 0) continue;
+                if (SimWatcher.IsBanner(line)) continue;
                 if (!Ranked.IsMatch(line)) continue;
                 return line.Length > 110 ? line.Substring(0, 107) + "..." : line;
             }

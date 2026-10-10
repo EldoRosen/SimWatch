@@ -155,8 +155,12 @@ namespace SimWatch
             SetStatus("Running diagnostics; this takes a few minutes...");
             try
             {
-                var outcome = await Task.Run(() => _plugin.Watcher.CheckAsync(true, CancellationToken.None));
+                var outcome = await Task.Run(() => _plugin.Watcher.CheckAsync(true, _plugin.SessionToken));
                 SetStatus($"Finished. Sim speed avg {outcome.Sample.Avg:0.00}. Report: {outcome.ReportPath}");
+            }
+            catch (OperationCanceledException)
+            {
+                SetStatus("Cancelled: the server session is stopping.");
             }
             catch (Exception ex)
             {

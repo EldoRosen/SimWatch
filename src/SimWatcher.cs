@@ -595,9 +595,12 @@ namespace SimWatch
                    command.IndexOf("--takeme", StringComparison.OrdinalIgnoreCase) < 0;
         }
 
-        static bool IsBanner(string line)
+        static readonly Regex BannerRegex = new Regex(@"^\s*(?:started|finished)\s+profiling", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        // "Started profiling ..." / "Finished profiling ..." (a grid or script that merely has "profiling" in its name is not a banner)
+        internal static bool IsBanner(string line)
         {
-            return line.IndexOf("profiling", StringComparison.OrdinalIgnoreCase) >= 0; // "Started/Finished profiling ..."
+            return BannerRegex.IsMatch(line ?? "");
         }
 
         /// <summary>

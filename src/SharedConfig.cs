@@ -18,6 +18,7 @@ namespace SimWatch
         public List<string> ChangedNames = new List<string>();
         public string PublishedBy = "?";
         public string PublishedUtc = "?";
+        public bool Retry;   // failed in a way that may pass by itself (file busy), so try again at the next tick
     }
 
     /// <summary>
@@ -50,9 +51,16 @@ namespace SimWatch
         {
             if (string.IsNullOrWhiteSpace(configured)) return null;
 
-            var path = configured.Trim().Trim('"');
-            var isFolder = path.EndsWith("\\") || path.EndsWith("/") || Directory.Exists(path) || string.IsNullOrEmpty(Path.GetExtension(path));
-            return isFolder ? Path.Combine(path, DefaultFileName) : path;
+            try
+            {
+                var path = configured.Trim().Trim('"');
+                var isFolder = path.EndsWith("\\") || path.EndsWith("/") || Directory.Exists(path) || string.IsNullOrEmpty(Path.GetExtension(path));
+                return isFolder ? Path.Combine(path, DefaultFileName) : path;
+            }
+            catch (ArgumentException)
+            {
+                return null; // illegal characters in the path (.NET Framework throws for them)
+            }
         }
 
         /// <summary>Changes whenever the file is rewritten.</summary>
@@ -194,6 +202,7 @@ namespace SimWatch
             if (document == null)
             {
                 result.Error = "the file is busy";
+                result.Retry = true;
                 return result;
             }
 

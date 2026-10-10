@@ -139,11 +139,12 @@ namespace SimWatch
             else if (force) Context.Respond($"Forced run: sampling sim speed for {seconds}s, then running {count} diagnostic commands. This takes a few minutes.");
             else Context.Respond($"Sampling sim speed for {seconds}s...");
 
+            var token = Owner.SessionToken;
             Task.Run(async () =>
             {
                 try
                 {
-                    var outcome = await watcher.CheckAsync(force, CancellationToken.None, scan);
+                    var outcome = await watcher.CheckAsync(force, token, scan);
                     var s = outcome.Sample;
                     var line = $"Sim speed avg {s.Avg:0.00}, min {s.Min:0.00}, max {s.Max:0.00}";
 
@@ -161,6 +162,10 @@ namespace SimWatch
                     {
                         Context.Respond($"{line}. Diagnostics finished; report: {outcome.ReportPath}");
                     }
+                }
+                catch (OperationCanceledException)
+                {
+                    Context.Respond("Check cancelled: the server session is stopping.");
                 }
                 catch (Exception e)
                 {

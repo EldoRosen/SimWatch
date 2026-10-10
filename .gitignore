@@ -1,48 +1,21 @@
-
-# Build output
-[Bb]in/
-[Oo]bj/
-[Dd]ebug/
-[Rr]elease/
-x64/
-x86/
-[Aa]rtifacts/
-
-# Visual Studio
+# build output
+bin/
+obj/
 .vs/
-*.suo
 *.user
-*.rsuser
+SimWatch.zip
+build-log.txt
+build-paths.bat
 
-# Rider / JetBrains
-.idea/
+# game and Torch files (copyrighted, never upload them)
+TorchBinaries/
+GameBinaries/
+*.dll
 
-# Test and coverage output
-TestResults/
-coverage/
-
-# Logs and temporary files
-*.log
-*.tmp
-*.temp
-*.bak
-*.old
-
-# Local secrets and environment files
-.env
-.env.*
-!.env.example
-secrets.json
-appsettings.Local.json
-appsettings.Development.json
-
-# Certificates and private keys
-*.pfx
-*.p12
-*.key
-*.pem
-
-# Operating system files
-.DS_Store
-Thumbs.db
-desktop.ini
+# your own server data and secrets (settings contain Discord webhook URLs)
+SimWatch.cfg
+SimWatch.cfg.broken
+SimWatch.shared.cfg
+SimWatch-Reports/
+history.tsv
+galaxy-announced.tsv

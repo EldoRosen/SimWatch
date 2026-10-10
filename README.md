@@ -1,6 +1,6 @@
 # SimWatch
 
-Torch plugin for Space Engineers dedicated servers. It averages the sim speed over a short window and,
+Torch plugin for Space Engineers dedicated servers. **Full manual: [docs/MANUAL.md](docs/MANUAL.md).** It averages the sim speed over a short window and,
 only if the average is below the threshold, runs a list of commands one after another (by default the
 Profiler plugin's `!profile ...` commands), captures their output, saves a report and can post the whole
 report to a Discord channel.
@@ -41,8 +41,8 @@ The Profiler plugin must also be installed and enabled for the default commands 
 (a loaded plugin whose assembly/namespace is `Profiler`) and shows the result in several places: a coloured line at
 the top of the plugin page in the Torch UI (green installed / red missing, with a "Re-check Profiler" button), the Torch
 log when the server starts ("SimWatch: Profiler check: ..."), the `!simwatch profiler` command, `!simwatch status`,
-the webhook test message and every report. When it is missing, SimWatch skips `!profile ...` commands (marked "skipped" in the report)
-when it is missing instead of waiting for them to time out.
+the webhook test message and every report. When it is missing, SimWatch skips `!profile ...` commands (marked "skipped" in
+the report) instead of waiting for them to time out.
 
 ## Repeat offender flag
 For every sim speed alert SimWatch remembers the top result of each profile command that names a specific object
@@ -153,6 +153,16 @@ top physics cluster. Always confirm it against the full output below it.
 - `!simwatch reload`
 
 ## Changelog
+**1.5.1**
+- Fix: editing the diagnostic commands in the GUI on the publishing server now republishes the shared file
+- Fix: an illegal character in the shared path no longer throws (publish/pull/status report "no shared path set" instead)
+- Fix: a failed pull of an unreadable shared file is retried only when the file changes (no warning every 15 s)
+- Fix: a grid or script with "profiling" in its name is no longer mistaken for the Profiler banner
+- Fix: names like "Miner 1s" are no longer cut down to "Miner" in the repeat offender history
+- Command output is read 1.5 s after the completion marker so results printed after it aren't cut off
+- Galaxy Offenders: a name keeps its original announce time when another name triggers a bulletin; a grid whose GPS couldn't be found is looked up again after 6 hours
+- Manual runs (`!simwatch check|test|scan`, "Run diagnostics now") stop when the server session unloads
+
 **1.5.0**
 - Cross-server config sharing through a shared file (publish on one server, follow on the others), with push/pull buttons and `!simwatch share`
 

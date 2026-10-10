@@ -23,6 +23,7 @@ namespace SimWatch
     {
         static readonly TimeSpan NoResponseAfter = TimeSpan.FromSeconds(10);
         static readonly TimeSpan QuietPeriod = TimeSpan.FromSeconds(3);
+        static readonly TimeSpan MarkerSettle = TimeSpan.FromMilliseconds(1500); // results may still arrive in messages after the marker
 
         readonly object _lock = new object();
         readonly StringBuilder _text = new StringBuilder();
@@ -81,10 +82,15 @@ namespace SimWatch
                     }
 
                     var done = untilMarker
-                        ? _markerSeen
+                        ? _markerSeen && DateTime.UtcNow - _lastMessageUtc >= MarkerSettle
                         : DateTime.UtcNow - _lastMessageUtc >= QuietPeriod;
                     if (done) return WaitResult.Completed;
                 }
+            }
+
+            lock (_lock)
+            {
+                if (untilMarker && _markerSeen) return WaitResult.Completed; // marker arrived, only the settle time ran out
             }
 
             return WaitResult.TimedOut;

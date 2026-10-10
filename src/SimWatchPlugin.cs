@@ -173,6 +173,7 @@ namespace SimWatch
             {
                 ShareStatus = "Pull failed: " + result.Error;
                 Log.Warn("SimWatch: " + ShareStatus);
+                if (!result.Retry) _shareSignature = signature; // unreadable content: retry only when the file changes, not every 15 s
                 return ShareStatus;
             }
 
@@ -246,9 +247,19 @@ namespace SimWatch
 
         void Stop()
         {
+            // Cancelled but not disposed on purpose: running tasks may still hold the token. The source holds no unmanaged resources.
             _canceller?.Cancel();
-            _canceller?.Dispose();
             _canceller = null;
+        }
+
+        /// <summary>Cancelled when the session unloads; manual runs use it so they stop with the session. Already cancelled when no session runs.</summary>
+        public CancellationToken SessionToken
+        {
+            get
+            {
+                var source = _canceller;
+                return source != null ? source.Token : new CancellationToken(true);
+            }
         }
 
         public override void Dispose()

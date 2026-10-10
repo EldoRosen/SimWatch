@@ -7,7 +7,7 @@
     <UseWPF>true</UseWPF>
     <AssemblyName>SimWatch</AssemblyName>
     <RootNamespace>SimWatch</RootNamespace>
-    <Version>1.5.0</Version>
+    <Version>1.5.1</Version>
     <Title>SimWatch</Title>
     <Product>Torch</Product>
     <DebugType>none</DebugType>

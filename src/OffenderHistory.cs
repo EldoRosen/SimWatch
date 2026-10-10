@@ -25,10 +25,11 @@ namespace SimWatch
         };
 
         const int MaxStoredAlerts = 200;
+        static readonly TimeSpan MissRetry = TimeSpan.FromHours(6); // a grid GPS that could not be resolved is looked up again after this
         static readonly TimeSpan MaxStoredAge = TimeSpan.FromDays(90);
 
         static readonly Regex RankPrefix = new Regex(@"^\s*(?:#\s*\d+|\d+\s*[.):]|\[\d+\])\s*", RegexOptions.Compiled);
-        static readonly Regex Measurement = new Regex(@"-?\d+(?:[.,]\d+)?\s*(?:%|(?:ms|\u00B5s|us|s|ticks?|tps)\b(?:\s*/\s*\w+)?)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        static readonly Regex Measurement = new Regex(@"-?(?:\d+[.,]\d+\s*s\b|\d+(?:[.,]\d+)?\s*(?:%|(?:ms|\u00B5s|us|ticks?|tps)\b)(?:\s*/\s*\w+)?)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         static readonly Regex Decimal = new Regex(@"-?\b\d+[.,]\d+\b", RegexOptions.Compiled);
         static readonly Regex EmptyBrackets = new Regex(@"\(\s*\)|\[\s*\]", RegexOptions.Compiled);
         static readonly Regex Spaces = new Regex(@"\s+", RegexOptions.Compiled);
@@ -252,7 +253,7 @@ namespace SimWatch
         static bool IsAnnounced(HashSet<string> announced, Offender o, SimWatchConfig config)
         {
             var key = o.Category + "\t" + o.Key;
-            if (WantsGps(o, config)) return announced.Contains(key + "\tgps");
+            if (WantsGps(o, config)) return announced.Contains(key + "\tgps") || announced.Contains(key + "\tmiss");
             return announced.Contains(key + "\treg") || announced.Contains(key + "\tgps");
         }
 
@@ -265,9 +266,15 @@ namespace SimWatch
                     var lines = new List<string>();
                     if (File.Exists(_announcedPath)) lines.AddRange(File.ReadAllLines(_announcedPath, Encoding.UTF8));
 
+                    var already = LoadAnnounced(config, nowUtc);
                     foreach (var o in offenders)
                     {
-                        lines.Add($"{Clean(o.Category)}\t{Clean(o.Key)}\t{nowUtc.Ticks.ToString(CultureInfo.InvariantCulture)}\t{(WantsGps(o, config) ? "gps" : "reg")}");
+                        // names announced before keep their original time, so they come round again after the window
+                        if (IsAnnounced(already, o, config)) continue;
+
+                        // a grid whose position couldn't be found is tried again after MissRetry; the others are done for the window
+                        var level = !WantsGps(o, config) ? "reg" : string.IsNullOrEmpty(o.Gps) ? "miss" : "gps";
+                        lines.Add($"{Clean(o.Category)}\t{Clean(o.Key)}\t{nowUtc.Ticks.ToString(CultureInfo.InvariantCulture)}\t{level}");
                     }
 
                     // keep only the latest 500 lines
@@ -293,7 +300,8 @@ namespace SimWatch
                 var parts = line.Split('\t');
                 if (parts.Length < 3 || !long.TryParse(parts[2], NumberStyles.None, CultureInfo.InvariantCulture, out var ticks)) continue;
                 var level = parts.Length > 3 ? parts[3] : "reg";
-                if (ticks >= windowStart) set.Add(parts[0] + "\t" + parts[1] + "\t" + level);
+                var start = level == "miss" ? Math.Max(windowStart, nowUtc.Ticks - MissRetry.Ticks) : windowStart;
+                if (ticks >= start) set.Add(parts[0] + "\t" + parts[1] + "\t" + level);
             }
 
             return set;

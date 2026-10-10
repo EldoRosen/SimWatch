@@ -2,5 +2,5 @@
 <PluginManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <Name>SimWatch</Name>
   <Guid>3b8d9756-d925-4bf8-9825-8d62f554912b</Guid>
-  <Version>v1.5.0</Version>
+  <Version>v1.5.1</Version>
 </PluginManifest>

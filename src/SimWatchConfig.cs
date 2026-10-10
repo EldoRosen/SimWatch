@@ -264,7 +264,8 @@ namespace SimWatch
 
                 if (lines.SequenceEqual(_diagnosticCommands)) return;
                 _diagnosticCommands = lines;
-                OnPropertyChanged();
+                OnPropertyChanged();                           // keeps the text box in sync
+                OnPropertyChanged(nameof(DiagnosticCommands)); // lets the config sharing see the change
             }
         }
 
